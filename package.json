@@ -17,6 +17,8 @@
     "node-pogo-signature": "github:pogosandbox/node-pogo-signature#0.57.2"
   },
   "devDependencies": {
-    "eslint": "^3.16.1"
+    "eslint": "^3.16.1",
+    "eslint-config-airbnb-base": "^11.1.0",
+    "eslint-plugin-import": "^2.2.0"
   }
 }
