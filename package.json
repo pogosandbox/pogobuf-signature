@@ -1,0 +1,22 @@
+{
+  "name": "pogobuf-signature",
+  "version": "1.0.0",
+  "description": "Signature generation and hashing for [pogobuf](https://github.com/cyraxx/pogobuf/)",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pogosandbox/pogobuf-signature.git"
+  },
+  "author": "niico",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pogosandbox/pogobuf-signature/issues"
+  },
+  "homepage": "https://github.com/pogosandbox/pogobuf-signature#readme",
+  "dependencies": {
+    "node-pogo-signature": "github:pogosandbox/node-pogo-signature#0.57.2"
+  },
+  "devDependencies": {
+    "eslint": "^3.16.1"
+  }
+}
