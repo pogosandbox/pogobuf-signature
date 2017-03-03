@@ -103,7 +103,7 @@ module.exports.register = function(client, deviceId) {
             hardware_manufacturer: 'Apple',
             hardware_model: 'N71AP',
             firmware_brand: 'iOS',
-            firmware_type: '10.2',
+            firmware_type: '10.2.1',
         };
 
         infos.activity_status = {
