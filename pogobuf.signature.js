@@ -25,6 +25,13 @@ let lastLocationFix = null;
 let locationFixes = []; // location fixes get generated all the taime and added as batch when api called
 let lastPos = { latitude: 0.0, longitude: 0.0 };
 
+module.exports.clean = function() {
+    if (timer) {
+        clearInterval(timer);
+    }
+    locationFixes = [];
+};
+
 module.exports.register = function(client, deviceId) {
     if (!deviceId) {
         deviceId = '';
@@ -99,6 +106,7 @@ module.exports.register = function(client, deviceId) {
             const locFix = infos.location_fix[infos.location_fix.length - 1];
             if (locFix.latitude !== client.playerLatitude && locFix.longitude !== client.playerLongitude) {
                 // update
+                updateLocFixes(this.getTime() - randomInt(10, 300));
             }
         }
 
