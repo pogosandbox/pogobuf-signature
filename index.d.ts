@@ -7,6 +7,12 @@ declare namespace signature {
          * @param {string} deviceId deviceId to use in signature. if none is passed a random one is generated
          */
         function register(client: any, deviceId: string): void;
+
+        /**
+         * To be called to clean up ressource. Should be called if you want to delete client or reuse
+         * client before reiinit
+         */
+        function clean(): void;
     }
 
     export module encryption {
