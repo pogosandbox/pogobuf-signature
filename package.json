@@ -1,6 +1,6 @@
 {
   "name": "pogobuf-signature",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "Signature generation and hashing for [pogobuf](https://github.com/cyraxx/pogobuf/)",
   "main": "index.js",
   "repository": {
@@ -14,7 +14,7 @@
   },
   "homepage": "https://github.com/pogosandbox/pogobuf-signature#readme",
   "dependencies": {
-    "node-pogo-signature": "github:pogosandbox/node-pogo-signature#0.57.4"
+    "node-pogo-signature": "starkevin/node-pogo-signature"
   },
   "types": "pogobuf-signature.d.ts",
   "devDependencies": {
