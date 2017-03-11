@@ -106,7 +106,7 @@ module.exports.register = function(client, deviceId) {
             const locFix = infos.location_fix[infos.location_fix.length - 1];
             if (locFix.latitude !== client.playerLatitude && locFix.longitude !== client.playerLongitude) {
                 // update
-                updateLocFixes(this.getTime() - randomInt(10, 300));
+                updateLocFixes(new Date().getTime() - randomInt(10, 300));
             }
         }
 
