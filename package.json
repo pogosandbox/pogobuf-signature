@@ -14,10 +14,10 @@
   },
   "homepage": "https://github.com/pogosandbox/pogobuf-signature#readme",
   "dependencies": {
-    "node-pogo-signature": "github:pogosandbox/node-pogo-signature#0.57.4",
+    "node-pogo-signature": "starkevin/node-pogo-signature",
     "request": "^2.81.0"
   },
-  "types": "pogobuf-signature.d.ts",
+  "types": "index.d.ts",
   "devDependencies": {
     "@types/node": "^7.0.8",
     "eslint": "^3.17.1",
