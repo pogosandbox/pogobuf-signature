@@ -1,24 +1,28 @@
+const request = require('request');
 
-let toIosVersion = function(version) {
+const toIosVersion = function(version) {
     let iosVersion = '1.' + ((+version - 3000) / 100).toFixed(0);
     iosVersion += '.' + (+version % 100);
     return iosVersion;
-}
-module.exports.toIosVersion = iosVersion;
+};
+module.exports.toIosVersion = toIosVersion;
 
-module.exports.getHashingEndpoint = function(server, version, callback) {
-    return request.get(server + 'api/hash/versions').then(response => {
-        const versions = JSON.parse(response.body);
-        if (!versions) throw new Error('Invalid initial response from hashing server');
+module.exports.getHashingEndpoint = function(server, version) {
+    return new Promise((resolve, reject) => {
+        request.get(server + 'api/hash/versions', (error, response) => {
+            if (error) return reject(error);
 
-        let iosVersion = toIosVersion(version);
+            const versions = JSON.parse(response.body);
+            if (!versions) throw new Error('Invalid initial response from hashing server');
 
-        self.hashingVersion = versions[iosVersion];
+            const iosVersion = toIosVersion(version);
+            const hashingVersion = versions[iosVersion];
 
-        if (!self.hashingVersion) {
-            throw new Error('Unsupported version for hashserver: ' + self.options.version + '/' + iosVersion);
-        }
-
-        return true;
+            if (!hashingVersion) {
+                return reject('Unsupported version for hashserver: ' + version + '/' + iosVersion);
+            } else {
+                return resolve(hashingVersion);
+            }
+        });
     });
-}
+};
