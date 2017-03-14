@@ -68,4 +68,21 @@ declare namespace signature {
 
         }
     }
+
+    export module versions {
+        /**
+         * Convert an app version (i.e. 5704) to ios version (1.27.4)
+         * @param {string|number} version app version (ex: 5704)
+         * @return {string} iosversion ios version (ex: 1.27.4)
+         */
+        function toIosVersion(version: string|number): string;
+
+        /**
+         * Get correct endpoint based on app version
+         * @param {string} server - hashing server url 
+         * @param {string|number} version app version (ex: 5704)
+         * @return {string} hash endpoint to call
+         */
+        function getHashingEndpoint(server: string, version: string|number): string;
+    }
 }
