@@ -1,6 +1,6 @@
 {
   "name": "pogobuf-signature",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Signature generation and hashing for [pogobuf](https://github.com/cyraxx/pogobuf/)",
   "main": "index.js",
   "repository": {
@@ -14,14 +14,14 @@
   },
   "homepage": "https://github.com/pogosandbox/pogobuf-signature#readme",
   "dependencies": {
-    "node-pogo-signature": "starkevin/node-pogo-signature",
+    "node-pogo-signature": "github:pogosandbox/node-pogo-signature#0.59.1",
     "request": "^2.81.0"
   },
   "types": "index.d.ts",
   "devDependencies": {
-    "@types/node": "^7.0.8",
-    "eslint": "^3.18.0",
-    "eslint-config-airbnb-base": "^11.1.1",
+    "@types/node": "^7.0.12",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.1.2",
     "eslint-plugin-import": "^2.2.0"
   }
 }
