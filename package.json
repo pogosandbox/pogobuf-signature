@@ -14,7 +14,7 @@
   },
   "homepage": "https://github.com/pogosandbox/pogobuf-signature#readme",
   "dependencies": {
-    "node-pogo-signature": "github:pogosandbox/node-pogo-signature#0.59.1",
+    "node-pogo-signature": "github:pogosandbox/node-pogo-signature#next",
     "request": "^2.81.0"
   },
   "types": "index.d.ts",
