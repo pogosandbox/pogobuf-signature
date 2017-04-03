@@ -114,6 +114,8 @@ module.exports.register = function(client, deviceId) {
             infos.location_fix = [lastLocationFix];
         }
 
+        envelope.accuracy = lastLocationFix.horizontal_accuracy;
+
         envelope.ms_since_last_locationfix = new Date().getTime() - lastLocationFixTimeStamp;
 
         infos.device_info = {
