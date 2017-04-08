@@ -40,30 +40,22 @@ module.exports.register = function(client, deviceId) {
         }
     }
 
-    start = new Date().getTime() - randomInt(3500, 4500);
+    start = new Date().getTime() - randomInt(4500, 5500);
     lastPos = { latitude: client.playerLatitude, longitude: client.playerLongitude };
 
-    const updateLocFixes = function(force, envelope) {
-        let when = (new Date()).getTime();
-        let pos = { latitude: client.playerLatitude, longitude: client.playerLongitude };
-        if (force) {
-            // force an update in the past
-            when -= randomInt(10, 300);
-            pos = { latitude: envelope.latitude, longitude: envelope.longitude };
-        }
-
-        const moving = (pos.latitude !== lastPos.latitude) || (pos.longitude !== lastPos.longitude);
-        if (force || lastLocationFix == null || moving || Math.random() > 0.85) {
-            lastPos = pos;
+    const updateLocFixes = function(when) {
+        const moving = (client.playerLatitude !== lastPos.latitude) || (client.playerLongitude !== lastPos.longitude);
+        lastPos = { latitude: client.playerLatitude, longitude: client.playerLongitude };
+        if (lastLocationFix == null || moving || Math.random() > 0.85) {
             const values = [5, 5, 5, 5, 10, 10, 10, 30, 30, 50, 65];
             values.unshift(Math.floor(Math.random() * (80 - 66)) + 66);
             client.playerLocationAccuracy = values[Math.floor(values.length * Math.random())];
 
-            const junk = !force && (Math.random() < 0.03);
+            const junk = Math.random() < 0.03;
             const loc = {
                 provider: 'fused',
-                latitude: junk ? 360.0 : pos.latitude,
-                longitude: junk ? 360.0 : pos.longitude,
+                latitude: junk ? 360.0 : client.playerLatitude,
+                longitude: junk ? 360.0 : client.playerLongitude,
                 altitude: junk ? 0.0 : (client.playerAltitude || randomTriangular(300, 400, 350)),
                 provider_status: 3,
                 location_type: 1,
@@ -86,11 +78,11 @@ module.exports.register = function(client, deviceId) {
                 loc.horizontal_accuracy = client.playerLocationAccuracy;
                 loc.vertical_accuracy = [3, 4, 6, 6, 8, 12, 24][randomInt(0, 8)];
             }
-            loc.timestamp_snapshot = when - start + randomInt(-100, 100);
+            loc.timestamp_snapshot = (when || new Date().getTime()) - start + randomInt(-100, 100);
 
             lastLocationFix = loc;
             locationFixes.push(loc);
-            lastLocationFixTimeStamp = when;
+            lastLocationFixTimeStamp = when || new Date().getTime();
         }
     };
     if (timer) {
@@ -102,11 +94,6 @@ module.exports.register = function(client, deviceId) {
     client.setOption('signatureInfo', envelope => {
         const infos = {};
 
-        if (envelope.latitude !== lastLocationFix.latitude || envelope.longitude !== lastLocationFix.longitude) {
-            // be sure location in the envelope is consistent with location fixes
-            updateLocFixes(true, envelope);
-        }
-
         if (locationFixes.length > 0) {
             infos.location_fix = locationFixes;
             locationFixes = [];
@@ -114,7 +101,14 @@ module.exports.register = function(client, deviceId) {
             infos.location_fix = [lastLocationFix];
         }
 
-        envelope.accuracy = lastLocationFix.horizontal_accuracy;
+        if (envelope.requests.length > 0 && envelope.requests[0].request_type === 106) {
+            // be sure getmapobject coords are consistent with last location update$
+            const locFix = infos.location_fix[infos.location_fix.length - 1];
+            if (locFix.latitude !== client.playerLatitude && locFix.longitude !== client.playerLongitude) {
+                // update
+                updateLocFixes(new Date().getTime() - randomInt(10, 300));
+            }
+        }
 
         envelope.ms_since_last_locationfix = new Date().getTime() - lastLocationFixTimeStamp;
 
