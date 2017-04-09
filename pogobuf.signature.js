@@ -44,6 +44,7 @@ module.exports.register = function(client, deviceId) {
     lastPos = { latitude: client.playerLatitude, longitude: client.playerLongitude };
 
     const updateLocFixes = function(when) {
+        when = when || new Date().getTime();
         const moving = (client.playerLatitude !== lastPos.latitude) || (client.playerLongitude !== lastPos.longitude);
         lastPos = { latitude: client.playerLatitude, longitude: client.playerLongitude };
         if (lastLocationFix == null || moving || Math.random() > 0.85) {
@@ -70,19 +71,17 @@ module.exports.register = function(client, deviceId) {
             }
             if (client.playerLocationAccuracy >= 65) {
                 loc.vertical_accuracy = randomTriangular(35, 100, 65);
-                loc.horizontal_accuracy = [client.playerLocationAccuracy, 65, 65, random(66, 80), 200][randomInt(0, 5)];
             } else if (client.playerLocationAccuracy > 10) {
-                loc.horizontal_accuracy = client.playerLocationAccuracy;
                 loc.vertical_accuracy = [24, 32, 48, 48, 64, 64, 96, 128][randomInt(0, 8)];
             } else {
-                loc.horizontal_accuracy = client.playerLocationAccuracy;
                 loc.vertical_accuracy = [3, 4, 6, 6, 8, 12, 24][randomInt(0, 8)];
             }
-            loc.timestamp_snapshot = (when || new Date().getTime()) - start + randomInt(-100, 100);
+                loc.horizontal_accuracy = client.playerLocationAccuracy;
+            loc.timestamp_snapshot = when - start + randomInt(-100, 100);
 
             lastLocationFix = loc;
             locationFixes.push(loc);
-            lastLocationFixTimeStamp = when || new Date().getTime();
+            lastLocationFixTimeStamp = when;
         }
     };
     if (timer) {
@@ -94,6 +93,13 @@ module.exports.register = function(client, deviceId) {
     client.setOption('signatureInfo', envelope => {
         const infos = {};
 
+        // be sure getmapobject coords are consistent with last location update
+        if (lastLocationFix.latitude !== client.playerLatitude && lastLocationFix.longitude !== client.playerLongitude) {
+            // update
+            var sinceLatest = new Date().getTime() - lastLocationFixTimeStamp;
+            updateLocFixes(new Date().getTime() - Math.floor(sinceLatest/2));
+        }
+
         if (locationFixes.length > 0) {
             infos.location_fix = locationFixes;
             locationFixes = [];
@@ -101,15 +107,8 @@ module.exports.register = function(client, deviceId) {
             infos.location_fix = [lastLocationFix];
         }
 
-        if (envelope.requests.length > 0 && envelope.requests[0].request_type === 106) {
-            // be sure getmapobject coords are consistent with last location update$
-            const locFix = infos.location_fix[infos.location_fix.length - 1];
-            if (locFix.latitude !== client.playerLatitude && locFix.longitude !== client.playerLongitude) {
-                // update
-                updateLocFixes(new Date().getTime() - randomInt(10, 300));
-            }
-        }
-
+        // be sure data is consistent with last location fix
+        envelope.accuracy = lastLocationFix.horizontal_accuracy;
         envelope.ms_since_last_locationfix = new Date().getTime() - lastLocationFixTimeStamp;
 
         infos.device_info = {
