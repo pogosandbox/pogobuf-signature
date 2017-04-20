@@ -18,17 +18,21 @@ module.exports.getHashingEndpoint = function(server, version) {
     return new Promise((resolve, reject) => {
         request.get(server + 'api/hash/versions', (error, response) => {
             if (error) return reject(error);
+            
+            try {
+                const versions = JSON.parse(response.body);
+                if (!versions) return reject(new Error('Invalid initial response from hashing server'));
 
-            const versions = JSON.parse(response.body);
-            if (!versions) throw new Error('Invalid initial response from hashing server');
+                const iosVersion = toClientVersion(version);
+                const hashingVersion = versions[iosVersion];
 
-            const iosVersion = toClientVersion(version);
-            const hashingVersion = versions[iosVersion];
-
-            if (!hashingVersion) {
-                return reject(new Error('Unsupported version for hashserver: ' + version + '/' + iosVersion));
-            } else {
-                return resolve(hashingVersion);
+                if (!hashingVersion) {
+                    return reject(new Error('Unsupported version for hashserver: ' + version + '/' + iosVersion));
+                } else {
+                    return resolve(hashingVersion);
+                }
+            } catch (e) {
+                return reject(e);
             }
         });
     });
