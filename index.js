@@ -1,4 +1,4 @@
-const encryption = require('node-pogo-signature');
+const encryption = require('./encryption');
 const signature = require('./generation');
 const versions = require('./versions');
 
