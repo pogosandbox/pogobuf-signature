@@ -27,7 +27,7 @@ function rotl8(val, bits) {
     return ((val << bits) | (val >> (8 - bits))) & 0xff;
 }
 
-function encrypt_cipher(src, size) {
+function encryptCipher(src, size) {
     const xbox = new Uint8Array([
         0x83, 0x57, 0x47, 0x28, 0x1c, 0x84, 0x5c, 0xf0, 0x25, 0xcc, 0x14, 0xd1, 0xe4, 0xe0, 0x4b, 0x4c,
         0x68, 0x20, 0x72, 0x37, 0x34, 0x7b, 0x23, 0xf3, 0x7d, 0x62, 0x8c, 0xa7, 0xe2, 0xa8, 0x88, 0x6e,
@@ -135,6 +135,8 @@ module.exports = {
      * @returns {Buffer} - encrypted Buffer
      */
     encrypt(input, ms, version) {
+        if (!version) version = 4;
+
         // Sanity checks
         if (!(input instanceof Buffer)) {
             throw new Error('Input must be Buffer');
@@ -192,7 +194,7 @@ module.exports = {
         const out = new Buffer(outputBuffer);
 
         if (version === 4) {
-            encrypt_cipher(out, totalSize);
+            encryptCipher(out, totalSize);
         }
 
         return out.slice(0, totalSize);
