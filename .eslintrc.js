@@ -21,7 +21,7 @@ module.exports = {
         "max-len": [1, {
             "tabWidth": 4,
             "code": 120,
-            "comments": 100
+            "ignoreComments": true
         }],
         "no-bitwise": 0,
         "no-continue": 0,
@@ -50,6 +50,7 @@ module.exports = {
             "requireParamDescription": false,
             "requireReturnDescription": false
         }],
-        "vars-on-top": 0
+        "vars-on-top": 0,
+        "guard-for-in": 0
     }
 };
