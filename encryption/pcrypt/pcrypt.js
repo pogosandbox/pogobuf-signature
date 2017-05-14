@@ -23,11 +23,7 @@ let unshuffle3;
     unshuffle3 = fns[1];
 }
 
-function rotl8(val, bits) {
-    return ((val << bits) | (val >> (8 - bits))) & 0xff;
-}
-
-function encryptCipher(src, size) {
+function shuffle4(vector) {
     const xbox = new Uint8Array([
         0x83, 0x57, 0x47, 0x28, 0x1c, 0x84, 0x5c, 0xf0, 0x25, 0xcc, 0x14, 0xd1, 0xe4, 0xe0, 0x4b, 0x4c,
         0x68, 0x20, 0x72, 0x37, 0x34, 0x7b, 0x23, 0xf3, 0x7d, 0x62, 0x8c, 0xa7, 0xe2, 0xa8, 0x88, 0x6e,
@@ -47,21 +43,21 @@ function encryptCipher(src, size) {
         0xef, 0x9d, 0xa1, 0x9e, 0xb6, 0xea, 0xc6, 0xf1, 0x80, 0x1d, 0x05, 0x73, 0xd6, 0xb3, 0x36, 0x85
     ]);
 
-    let a4 = size - 1;
-    let srci = 0;
-    let v4 = 0x01;
-    let v5 = 0x00;
-    for (a4; a4 !== 0; v4 = rotl8(v4 + 1, 8)) {
-        --a4;
-
-        const v7 = rotl8(xbox[v4], 8);
-        v5 = rotl8(v5 + v7, 8);
-        const v9 = rotl8(xbox[v5], 8);
+    let v4 = 0;
+    let v5 = 0;
+    for (let ii = 0; ii < vector.length; ++ii) {
+        v4 = (v4 + 1) & 0xff;
+        const v7 = xbox[v4];
+        v5 = (v5 + v7) & 0xff;
+        const v9 = xbox[v5];
         xbox[v4] = v9;
         xbox[v5] = v7;
-        const v10 = rotl8(v9 + v7, 8);
-        src[srci++] ^= xbox[v10];
+        vector[ii] ^= xbox[(v7 + v9) & 0xff];
     }
+}
+
+function rotl8(val, bits) {
+    return ((val << bits) | (val >> (8 - bits))) & 0xff;
 }
 
 // These simulate arithmetic of uint32_t w/ predictable overflow behavior. If you find yourself
@@ -112,10 +108,6 @@ function makeIntegrityByte2(byte) {
     return byte & 0xe3 | 0x10;
 }
 
-function makeIntegrityByte3() {
-    return 0x23;
-}
-
 class Random {
     constructor(seed) {
         this.state = seed;
@@ -135,8 +127,6 @@ module.exports = {
      * @returns {Buffer} - encrypted Buffer
      */
     encrypt(input, ms, version) {
-        if (!version) version = 4;
-
         // Sanity checks
         if (!(input instanceof Buffer)) {
             throw new Error('Input must be Buffer');
@@ -172,14 +162,16 @@ module.exports = {
         const cipher32 = new Int32Array(cipher8.buffer);
         let shuffleFn = shuffle2;
         let blockSize = 256;
+
+        if (version === undefined) version = 5;
         if (version === 2) {
             output8[totalSize - 1] = makeIntegrityByte1(rand.random());
         } else if (version === 3) {
             output8[totalSize - 1] = makeIntegrityByte2(rand.random());
-        } else {
+        } else if (version === 4 || version === 5) {
             shuffleFn = shuffle3;
             blockSize = 16;
-            output8[totalSize - 1] = makeIntegrityByte3();
+            output8[totalSize - 1] = 0x21;
         }
 
         // Encrypt in chunks of 256 bytes
@@ -191,13 +183,13 @@ module.exports = {
             cipher8.set(output8.subarray(offset, offset + blockSize));
         }
 
-        const out = new Buffer(outputBuffer);
-
-        if (version === 4) {
-            encryptCipher(out, totalSize);
+        // Extra cipher
+        if (version === 5) {
+            shuffle4(output8);
+            output8[totalSize - 1] = 0x23;
         }
 
-        return out.slice(0, totalSize);
+        return new Buffer(outputBuffer).slice(0, totalSize);
     },
 
     /**
@@ -206,7 +198,7 @@ module.exports = {
      */
     decrypt(input) {
         // Sanity checks
-        let version;
+        let version; // This `version` is not the same as `version` in encrypt. Sorry.
         if (!(input instanceof Buffer)) {
             throw new Error('Input must be Buffer');
         } else if (input.length < 261) {
@@ -239,19 +231,24 @@ module.exports = {
             unshuffleFn = unshuffle2;
             // input[input.length - 1] is unchecked integrity byte
         } else {
+            let integrityByte = input[input.length - 1];
+            if (integrityByte === 0x23) {
+                shuffle4(input); // shuffle4 is involutory
+                integrityByte = 0x21;
+            }
             output8 = new Uint8Array(input.slice(4, input.length - 1));
             const ms = input.readUInt32BE(0);
             const rand = new Random(ms);
             cipher32 = new Int32Array(cipher8FromRand(rand).buffer);
-            if (input[input.length - 1] === 0x21) {
+            if (integrityByte === 0x21) {
                 unshuffleFn = unshuffle3;
                 blockSize = 16;
             } else {
                 const byte = rand.random();
                 unshuffleFn = unshuffle2;
                 if (
-                    input[input.length - 1] !== makeIntegrityByte1(byte) &&
-                    input[input.length - 1] !== makeIntegrityByte2(byte)
+                    integrityByte !== makeIntegrityByte1(byte) &&
+                    integrityByte !== makeIntegrityByte2(byte)
                 ) {
                     throw new Error('Integrity check failed');
                 }
