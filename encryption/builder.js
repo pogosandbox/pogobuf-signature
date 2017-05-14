@@ -165,8 +165,10 @@ Builder.prototype.getUk25 = function() {
     // else if (this.version.startsWith('0.59')) return longjs.fromString('-3226782243204485589', false);
     // else throw new Error('Unhandled config version: ' + this.version);
 
+    // 0.63
+    if (this.version.startsWith('0.63')) return Long.fromString('5348175887752539474', false);
     // 0.61
-    return Long.fromString('1296456256998993698', false);
+    else return Long.fromString('1296456256998993698', false);
 };
 
 module.exports = Builder;
