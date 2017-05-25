@@ -1,12 +1,8 @@
 'use strict';
 
-const protobuf = require('protobufjs');
 const Utils = require('./utils');
 const crypto = require('crypto');
 const Long = require('long');
-const path = require('path');
-
-let ProtoSignature = protobuf.loadProtoFile(path.join(__dirname, 'proto', 'Signature.proto')).build().Signature;
 
 /**
  * the signature builder
@@ -24,7 +20,9 @@ const Builder = function(options) {
     this.version = options.version || '0.45';
     this.forcedUk25 = options.uk25 || null;
     if (options.protos) {
-        ProtoSignature = options.protos.Networking.Envelopes.Signature;
+        this.ProtoSignature = options.protos.Networking.Envelopes.Signature;
+    } else {
+        throw new Error('Passing protos object is now mandatory.');
     }
 
     this.utils = new Utils();
@@ -54,8 +52,8 @@ Builder.prototype.setLocation = function(lat, lng, accuracy) {
 Builder.prototype.setAuthTicket = function(authTicket, isEncoded) {
     if (isEncoded) {
         this.authTicket = authTicket;
-    } else if (authTicket.encode) {
-        this.authTicket = authTicket.encode().toBuffer();
+    } else {
+        this.authTicket = authTicket.constructor.encode(authTicket).finish();
     }
 };
 
@@ -88,8 +86,8 @@ Builder.prototype.buildSignature = function(requests) {
 
     const byteRequests = [];
     for (const request of requests) {
-        if (request.encode) {
-            byteRequests.push(request.encode().toBuffer().toString('base64'));
+        if (request.constructor.encode) {
+            byteRequests.push(request.constructor.encode(request).finish().toString('base64'));
         } else {
             byteRequests.push(request.toString('base64'));
         }
@@ -115,7 +113,7 @@ Builder.prototype.buildSignature = function(requests) {
             signatureData[field] = this.fields[field];
         }
 
-        const signature = new ProtoSignature(signatureData);
+        const signature = this.ProtoSignature.fromObject(signatureData);
 
         const requestHashes = [];
         if (response.request_hash) {
@@ -142,7 +140,8 @@ Builder.prototype.buildSignature = function(requests) {
 Builder.prototype.encrypt = function(requests, cb) {
     this.buildSignature(requests)
     .then(response => {
-        this.utils.encrypt(response.encode().toBuffer(), +response.timestamp_since_start, cb);
+        const buffer = this.ProtoSignature.encode(response).finish();
+        this.utils.encrypt(buffer, +response.timestamp_since_start, cb);
     })
     .catch(e => {
         cb(e, null);
