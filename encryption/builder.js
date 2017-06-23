@@ -156,18 +156,10 @@ Builder.prototype.getUk25 = function() {
         else return Long.fromString(this.forcedUk25, false);
     }
 
-    // if (this.version.startsWith('0.45')) return longjs.fromString('-816976800928766045', false);
-    // else if (this.version.startsWith('0.51')) return longjs.fromString('-8832040574896607694', false);
-    // else if (this.version.startsWith('0.53')) return longjs.fromString('-76506539888958491', false);
-    // else if (this.version.startsWith('0.55')) return longjs.fromString('-9156899491064153954', false);
-    // else if (this.version.startsWith('0.57')) return longjs.fromString('-816976800928766045', false);
-    // else if (this.version.startsWith('0.59')) return longjs.fromString('-3226782243204485589', false);
-    // else throw new Error('Unhandled config version: ' + this.version);
-
-    // 0.63
     if (this.version.startsWith('0.63')) return Long.fromString('5348175887752539474', false);
-    // 0.61
-    else return Long.fromString('1296456256998993698', false);
+    else if (this.version.startsWith('0.67')) return Long.fromString('5395925083854747393', false);
+
+    throw new Error('Unsupported encryption for version ' + this.version);
 };
 
 module.exports = Builder;
