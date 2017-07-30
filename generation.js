@@ -40,7 +40,7 @@ Generator.prototype.clean = function() {
 };
 
 Generator.prototype.updateLocFixes = function(when) {
-    when = when || new Date().getTime();
+    when = +when || (new Date()).getTime();
     const moving = (this.client.playerLatitude !== this.lastPos.latitude)
                     || (this.client.playerLongitude !== this.lastPos.longitude);
 
