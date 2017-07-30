@@ -23,7 +23,7 @@ const Generator = function(options) {
     this.timer = null;
     this.start = 0; // time from start, get updated at register();
     this.course = (Math.random() * 360).toFixed(1); // last course, used to calculate next one
-    this.lastLocationFixTimeStamp = new Date().getTime() - randomInt(1000, 2000);
+    this.lastLocationFixTimeStamp = (new Date()).getTime() - randomInt(1000, 2000);
     this.lastLocationFix = null;
     this.locationFixes = []; // location fixes get generated all the taime and added as batch when api called
     this.lastPos = { latitude: 0.0, longitude: 0.0 };
@@ -40,7 +40,7 @@ Generator.prototype.clean = function() {
 };
 
 Generator.prototype.updateLocFixes = function(when) {
-    when = when || new Date().getTime();
+    when = +when || (new Date()).getTime();
     const moving = (this.client.playerLatitude !== this.lastPos.latitude)
                     || (this.client.playerLongitude !== this.lastPos.longitude);
 
@@ -90,8 +90,8 @@ Generator.prototype.generate = function(envelope) {
     if (this.lastLocationFix.latitude !== this.client.playerLatitude
         && this.lastLocationFix.longitude !== this.client.playerLongitude) {
         // update
-        var sinceLatest = new Date().getTime() - this.lastLocationFixTimeStamp;
-        this.updateLocFixes(new Date().getTime() - Math.floor(sinceLatest / 2));
+        var sinceLatest = (new Date()).getTime() - this.lastLocationFixTimeStamp;
+        this.updateLocFixes((new Date()).getTime() - Math.floor(sinceLatest / 2));
     }
 
     if (this.locationFixes.length > 0) {
@@ -103,7 +103,7 @@ Generator.prototype.generate = function(envelope) {
 
     // be sure data is consistent with last location fix
     envelope.accuracy = this.lastLocationFix.horizontal_accuracy;
-    envelope.ms_since_last_locationfix = new Date().getTime() - this.lastLocationFixTimeStamp;
+    envelope.ms_since_last_locationfix = (new Date()).getTime() - this.lastLocationFixTimeStamp;
 
     infos.device_info = {
         device_id: this.deviceId,
@@ -113,7 +113,7 @@ Generator.prototype.generate = function(envelope) {
         hardware_manufacturer: 'Apple',
         hardware_model: 'N71AP',
         firmware_brand: 'iOS',
-        firmware_type: '10.2.1',
+        firmware_type: '10.3.3',
     };
 
     infos.activity_status = {
@@ -154,7 +154,7 @@ Generator.prototype.register = function(client, deviceId) {
     }
     this.deviceId = deviceId;
 
-    this.start = new Date().getTime() - randomInt(4500, 5500);
+    this.start = (new Date()).getTime() - randomInt(4500, 5500);
     this.lastPos = { latitude: client.playerLatitude, longitude: client.playerLongitude };
 
     if (this.timer) {

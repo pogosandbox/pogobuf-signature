@@ -1,12 +1,8 @@
 'use strict';
 
-const protobuf = require('protobufjs');
 const Utils = require('./utils');
 const crypto = require('crypto');
 const Long = require('long');
-const path = require('path');
-
-let ProtoSignature = protobuf.loadProtoFile(path.join(__dirname, 'proto', 'Signature.proto')).build().Signature;
 
 /**
  * the signature builder
@@ -24,7 +20,9 @@ const Builder = function(options) {
     this.version = options.version || '0.45';
     this.forcedUk25 = options.uk25 || null;
     if (options.protos) {
-        ProtoSignature = options.protos.Networking.Envelopes.Signature;
+        this.ProtoSignature = options.protos.Networking.Envelopes.Signature;
+    } else {
+        throw new Error('Passing protos object is now mandatory.');
     }
 
     this.utils = new Utils();
@@ -54,8 +52,8 @@ Builder.prototype.setLocation = function(lat, lng, accuracy) {
 Builder.prototype.setAuthTicket = function(authTicket, isEncoded) {
     if (isEncoded) {
         this.authTicket = authTicket;
-    } else if (authTicket.encode) {
-        this.authTicket = authTicket.encode().toBuffer();
+    } else {
+        this.authTicket = authTicket.constructor.encode(authTicket).finish();
     }
 };
 
@@ -88,8 +86,8 @@ Builder.prototype.buildSignature = function(requests) {
 
     const byteRequests = [];
     for (const request of requests) {
-        if (request.encode) {
-            byteRequests.push(request.encode().toBuffer().toString('base64'));
+        if (request.constructor.encode) {
+            byteRequests.push(request.constructor.encode(request).finish().toString('base64'));
         } else {
             byteRequests.push(request.toString('base64'));
         }
@@ -100,37 +98,37 @@ Builder.prototype.buildSignature = function(requests) {
 
     // Do the hashing, get the response back and build the signature
     return this.utils.hashWithServer(this.authTicket, this.lat, this.lng, this.accuracy,
-                                     timestamp, this.fields.session_hash, byteRequests)
-    .then(response => {
-        this.rateInfos = this.utils.rateInfos;
-        const signatureData = {
-            location_hash1: response.location1,
-            location_hash2: response.location2,
-            timestamp: timestamp,
-            timestamp_since_start: msSinceStart,
-            unknown25: this.getUk25()
-        };
+        timestamp, this.fields.session_hash, byteRequests)
+        .then(response => {
+            this.rateInfos = this.utils.rateInfos;
+            const signatureData = {
+                location_hash1: response.location1,
+                location_hash2: response.location2,
+                timestamp: timestamp,
+                timestamp_since_start: msSinceStart,
+                unknown25: this.getUk25()
+            };
 
-        for (const field in this.fields) {
-            signatureData[field] = this.fields[field];
-        }
-
-        const signature = new ProtoSignature(signatureData);
-
-        const requestHashes = [];
-        if (response.request_hash) {
-            if (!Array.isArray(response.request_hash)) {
-                response.request_hash = [response.request_hash];
+            for (const field in this.fields) {
+                signatureData[field] = this.fields[field];
             }
 
-            for (const element of response.request_hash) {
-                requestHashes.push(Long.fromString(String(element), true, 10));
-            }
-        }
+            const signature = this.ProtoSignature.fromObject(signatureData);
 
-        signature.request_hash = requestHashes;
-        return signature;
-    });
+            const requestHashes = [];
+            if (response.request_hash) {
+                if (!Array.isArray(response.request_hash)) {
+                    response.request_hash = [response.request_hash];
+                }
+
+                for (const element of response.request_hash) {
+                    requestHashes.push(Long.fromString(String(element), true, 10));
+                }
+            }
+
+            signature.request_hash = requestHashes;
+            return signature;
+        });
 };
 
 /**
@@ -141,12 +139,13 @@ Builder.prototype.buildSignature = function(requests) {
  */
 Builder.prototype.encrypt = function(requests, cb) {
     this.buildSignature(requests)
-    .then(response => {
-        this.utils.encrypt(response.encode().toBuffer(), +response.timestamp_since_start, cb);
-    })
-    .catch(e => {
-        cb(e, null);
-    });
+        .then(response => {
+            const buffer = this.ProtoSignature.encode(response).finish();
+            this.utils.encrypt(buffer, +response.timestamp_since_start, cb);
+        })
+        .catch(e => {
+            cb(e, null);
+        });
 };
 
 Builder.prototype.getUk25 = function() {
@@ -157,18 +156,10 @@ Builder.prototype.getUk25 = function() {
         else return Long.fromString(this.forcedUk25, false);
     }
 
-    // if (this.version.startsWith('0.45')) return longjs.fromString('-816976800928766045', false);
-    // else if (this.version.startsWith('0.51')) return longjs.fromString('-8832040574896607694', false);
-    // else if (this.version.startsWith('0.53')) return longjs.fromString('-76506539888958491', false);
-    // else if (this.version.startsWith('0.55')) return longjs.fromString('-9156899491064153954', false);
-    // else if (this.version.startsWith('0.57')) return longjs.fromString('-816976800928766045', false);
-    // else if (this.version.startsWith('0.59')) return longjs.fromString('-3226782243204485589', false);
-    // else throw new Error('Unhandled config version: ' + this.version);
+    if (this.version.startsWith('0.67')) return Long.fromString('5395925083854747393', false);
+    else if (this.version.startsWith('0.69')) return Long.fromString('5395925083854747393', false);
 
-    // 0.63
-    if (this.version.startsWith('0.63')) return Long.fromString('5348175887752539474', false);
-    // 0.61
-    else return Long.fromString('1296456256998993698', false);
+    throw new Error('Unsupported encryption for version ' + this.version);
 };
 
 module.exports = Builder;

@@ -97,7 +97,7 @@ Utils.prototype.hashWithServer = function(authTicket, latitude, longitude, accur
             headers: {
                 'X-AuthToken': this.pokeHashKey,
                 'content-type': 'application/json',
-                'User-Agent': 'node-pogo-signature',
+                'User-Agent': 'pogobuf-signature',
             }
         }, res => {
             let data = '';
@@ -140,7 +140,7 @@ Utils.prototype.hashWithServer = function(authTicket, latitude, longitude, accur
 
                     case 401:
                         fail(new errors.HashServerError('Invalid key sent to hashing server',
-                                                        res.statusCode, data, false));
+                            res.statusCode, data, false));
                         break;
 
                     default:
