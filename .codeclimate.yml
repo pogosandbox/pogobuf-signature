@@ -14,3 +14,4 @@ engines:
     enabled: true
 exclude_paths:
   - node_modules/
+  - encryption/pcrypt/
