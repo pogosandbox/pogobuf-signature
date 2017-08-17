@@ -62,9 +62,9 @@ Generator.prototype.updateLocFixes = function(when) {
             course: -1,
             speed: -1,
         };
-        if (Math.random() < 0.95) {
+        if (Math.random() < 0.85) {
             loc.course = randomTriangular(0, 359.9, this.course);
-            loc.speed = randomTriangular(0.2, 4.25, 1);
+            loc.speed = randomTriangular(0.25, 9.7, 8.2);
             this.course = loc.course;
         }
         if (this.client.playerLocationAccuracy >= 65) {
@@ -122,22 +122,22 @@ Generator.prototype.generate = function(envelope) {
 
     infos.sensor_info = [{
         timestamp_snapshot: (this.lastLocationFixTimeStamp - this.start) + randomInt(-800, 800),
-        linear_acceleration_x: randomTriangular(-1.7, 1.2, 0),
-        linear_acceleration_y: randomTriangular(-1.4, 1.9, 0),
+        linear_acceleration_x: randomTriangular(-1.5, 2.5, 0),
+        linear_acceleration_y: randomTriangular(-1.2, 1.4, 0),
         linear_acceleration_z: randomTriangular(-1.4, 0.9, 0),
         magnetic_field_x: randomTriangular(-54, 50, 0),
         magnetic_field_y: randomTriangular(-51, 57, -4.8),
         magnetic_field_z: randomTriangular(-56, 43, -30),
         magnetic_field_accuracy: [-1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2][randomInt(0, 7)],
         attitude_pitch: randomTriangular(-1.5, 1.5, 0.4),
-        attitude_yaw: randomTriangular(-3.1, 3.1, 0.198),
-        attitude_roll: randomTriangular(-2.8, 3.04, 0),
-        rotation_rate_x: randomTriangular(-4.7, 3.9, 0),
-        rotation_rate_y: randomTriangular(-4.7, 4.3, 0),
-        rotation_rate_z: randomTriangular(-4.7, 6.5, 0),
-        gravity_x: randomTriangular(-1, 1, 0),
-        gravity_y: randomTriangular(-1, 1, -0.2),
-        gravity_z: randomTriangular(-1, 0.7, -0.7),
+        attitude_yaw: randomTriangular(-1.56, 3.1, 0.1),
+        attitude_roll: randomTriangular(-3.1, 3.1, 0),
+        rotation_rate_x: randomTriangular(-3.1, 3.6, 0),
+        rotation_rate_y: randomTriangular(-3.1, 4.8, 0),
+        rotation_rate_z: randomTriangular(-6, 3.5, 0),
+        gravity_x: randomTriangular(-1, 1, 0.01),
+        gravity_y: randomTriangular(-1, 1, -0.4),
+        gravity_z: randomTriangular(-1, 1, -0.4),
         status: 3,
     }];
 
