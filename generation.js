@@ -105,6 +105,10 @@ Generator.prototype.generate = function(envelope) {
     envelope.accuracy = this.lastLocationFix.horizontal_accuracy;
     envelope.ms_since_last_locationfix = (new Date()).getTime() - this.lastLocationFixTimeStamp;
 
+    // unknown for now, so random
+    infos.unknown27 = randomInt(1000, 60000);
+
+    // device info (iPhone 6s)
     infos.device_info = {
         device_id: this.deviceId,
         device_brand: 'Apple',
