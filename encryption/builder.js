@@ -156,11 +156,11 @@ Builder.prototype.getUk25 = function() {
         else return Long.fromString(this.forcedUk25, false);
     }
 
-    if (this.version.startsWith('0.67')) return Long.fromString('5395925083854747393', false);
-    else if (this.version.startsWith('0.69')) return Long.fromString('5395925083854747393', false);
+    if (this.version.startsWith('0.69')) return Long.fromString('5395925083854747393', false);
     else if (this.version.startsWith('0.73')) return Long.fromString('-960786418476827155', false, 10);
     else if (this.version.startsWith('0.75')) return Long.fromString('-960786418476827155', false, 10);
-
+    else if (this.version.startsWith('0.77')) return Long.fromString('-6553495230586135539', false, 10);
+    
     throw new Error('Unsupported encryption for version ' + this.version);
 };
 
