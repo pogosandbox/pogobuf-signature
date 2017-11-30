@@ -1,6 +1,6 @@
 {
   "name": "pogobuf-signature",
-  "version": "2.3.8",
+  "version": "2.3.9",
   "description": "Signature generation and hashing for [pogobuf](https://github.com/pogosandbox/pogobuf/)",
   "main": "index.js",
   "repository": {

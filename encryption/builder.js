@@ -160,6 +160,7 @@ Builder.prototype.getUk25 = function() {
     else if (this.version.startsWith('0.75')) return Long.fromString('-960786418476827155', false, 10);
     else if (this.version.startsWith('0.77')) return Long.fromString('-6553495230586135539', false, 10);
     else if (this.version.startsWith('0.79')) return Long.fromString('-6553495230586135539', false, 10);
+    else if (this.version.startsWith('0.83')) return Long.fromString('3081064678568720862', false, 10);
 
     throw new Error('Unsupported encryption for version ' + this.version);
 };
