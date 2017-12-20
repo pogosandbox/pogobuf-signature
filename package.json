@@ -1,6 +1,6 @@
 {
   "name": "pogobuf-signature",
-  "version": "2.3.10",
+  "version": "2.3.11",
   "description": "Signature generation and hashing for [pogobuf](https://github.com/pogosandbox/pogobuf/)",
   "main": "index.js",
   "repository": {
@@ -20,9 +20,9 @@
   },
   "types": "index.d.ts",
   "devDependencies": {
-    "@types/node": "^8.0.44",
-    "eslint": "^4.9.0",
+    "@types/node": "^8.5.1",
+    "eslint": "^4.13.1",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.7.0"
+    "eslint-plugin-import": "^2.8.0"
   }
 }
