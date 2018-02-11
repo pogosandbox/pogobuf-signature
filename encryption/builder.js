@@ -150,7 +150,7 @@ Builder.prototype.encrypt = function(requests, cb) {
 
 Builder.prototype.getUk25 = function() {
     // if forced uk25 was passed in option, use it
-    // we suppose unsigned negative long is a string is passed
+    // we suppose unsigned negative long if a string is passed
     if (this.forcedUk25) {
         if (Long.isLong(this.forcedUk25)) return this.forcedUk25;
         else return Long.fromString(this.forcedUk25, false);
