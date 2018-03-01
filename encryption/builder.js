@@ -97,38 +97,39 @@ Builder.prototype.buildSignature = function(requests) {
     const timestamp = this.time || new Date().getTime();
 
     // Do the hashing, get the response back and build the signature
-    return this.utils.hashWithServer(this.authTicket, this.lat, this.lng, this.accuracy,
-        timestamp, this.fields.session_hash, byteRequests)
-        .then(response => {
-            this.rateInfos = this.utils.rateInfos;
-            const signatureData = {
-                location_hash1: response.location1,
-                location_hash2: response.location2,
-                timestamp: timestamp,
-                timestamp_since_start: msSinceStart,
-                unknown25: this.getUk25()
-            };
+    return this.utils.hashWithServer(
+        this.authTicket, this.lat, this.lng, this.accuracy,
+        timestamp, this.fields.session_hash, byteRequests
+    ).then(response => {
+        this.rateInfos = this.utils.rateInfos;
+        const signatureData = {
+            location_hash1: response.location1,
+            location_hash2: response.location2,
+            timestamp: timestamp,
+            timestamp_since_start: msSinceStart,
+            unknown25: this.getUk25()
+        };
 
-            for (const field in this.fields) {
-                signatureData[field] = this.fields[field];
+        for (const field in this.fields) {
+            signatureData[field] = this.fields[field];
+        }
+
+        const signature = this.ProtoSignature.fromObject(signatureData);
+
+        const requestHashes = [];
+        if (response.request_hash) {
+            if (!Array.isArray(response.request_hash)) {
+                response.request_hash = [response.request_hash];
             }
 
-            const signature = this.ProtoSignature.fromObject(signatureData);
-
-            const requestHashes = [];
-            if (response.request_hash) {
-                if (!Array.isArray(response.request_hash)) {
-                    response.request_hash = [response.request_hash];
-                }
-
-                for (const element of response.request_hash) {
-                    requestHashes.push(Long.fromString(String(element), true, 10));
-                }
+            for (const element of response.request_hash) {
+                requestHashes.push(Long.fromString(String(element), true, 10));
             }
+        }
 
-            signature.request_hash = requestHashes;
-            return signature;
-        });
+        signature.request_hash = requestHashes;
+        return signature;
+    });
 };
 
 /**
@@ -136,16 +137,25 @@ Builder.prototype.buildSignature = function(requests) {
  * @global
  * @param {Object|Object[]|Buffer|Buffer[]} requests - array of RPC requests (protobuf objects or encoded protobuf Buffers) to be used in the signature generation
  * @param {encryptCallback} cb - function to be called when encryption is completed
+ * @return {Promise|none} promise of encrypted buffer in no callback
  */
 Builder.prototype.encrypt = function(requests, cb) {
-    this.buildSignature(requests)
-        .then(response => {
-            const buffer = this.ProtoSignature.encode(response).finish();
-            this.utils.encrypt(buffer, +response.timestamp_since_start, cb);
-        })
-        .catch(e => {
-            cb(e, null);
-        });
+    if (cb) {
+        return this.buildSignature(requests)
+            .then(response => {
+                const buffer = this.ProtoSignature.encode(response).finish();
+                this.utils.encrypt(buffer, +response.timestamp_since_start, cb);
+            })
+            .catch(e => {
+                cb(e, null);
+            });
+    } else {
+        return this.buildSignature(requests)
+            .then(response => {
+                const buffer = this.ProtoSignature.encode(response).finish();
+                return this.utils.encrypt(buffer, +response.timestamp_since_start);
+            });
+    }
 };
 
 Builder.prototype.getUk25 = function() {
