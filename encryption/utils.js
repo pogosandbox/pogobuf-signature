@@ -30,10 +30,18 @@ Utils.prototype.useHashingServer = function(url, key) {
  * @param {encryptCallback} cb - function to be called when encryption is completed
  */
 Utils.prototype.encrypt = function(input, msSinceStart, cb) {
-    if (isNaN(+msSinceStart)) {
-        cb('Must provide a valid timestamp');
+    if (cb) {
+        if (isNaN(+msSinceStart)) {
+            cb('Must provide a valid timestamp');
+        } else {
+            cb(null, pcrypt.encrypt(input, msSinceStart));
+        }
     } else {
-        cb(null, pcrypt.encrypt(input, msSinceStart));
+        if (isNaN(+msSinceStart)) {
+            throw new Error('Must provide a valid timestamp');
+        } else {
+           return pcrypt.encrypt(input, msSinceStart);
+        }
     }
 };
 
