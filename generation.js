@@ -171,7 +171,7 @@ Generator.prototype.generateFromGuess = function(envelope) {
     };
     this.locationFixes = [];
     for (let i = 1; i <= seconds; i++) {
-        const when = this.lastLocationFixTimeStamp + 1000;
+        const when = this.lastLocationFixTimeStamp + i * 1000;
         const pos = {
             latitude: this.lastPos.latitude + i * step.latitude,
             longitude: this.lastPos.longitude + i * step.longitude,
